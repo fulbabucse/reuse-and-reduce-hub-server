@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const port = process.env.PORT || 5000;
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 app.use(cors());
@@ -27,6 +28,20 @@ const dbConnect = async () => {
       const user = req.body;
       const result = await Users.insertOne(user);
       res.send(result);
+    });
+
+    app.get("/jwt", async (req, res) => {
+      const email = req.query.email;
+      const query = { email };
+      const user = await Users.findOne(query);
+
+      if (user) {
+        const token = jwt.sign({ email }, process.env.JWT_ACCESS_TOKEN, {
+          expiresIn: "1d",
+        });
+        return res.send({ reuseReduceToken: token });
+      }
+      res.status(403).send({ message: "forbidden access" });
     });
   } finally {
   }
