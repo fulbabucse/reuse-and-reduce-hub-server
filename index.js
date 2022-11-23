@@ -13,6 +13,8 @@ app.get("/", (req, res) => {
   res.send("Welcome to Reuse and Reduce Server ...");
 });
 
+const tokenVerify = (req, res, next) => {};
+
 const url = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.7ywptfp.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(url, {
   useNewUrlParser: true,
@@ -28,6 +30,12 @@ const dbConnect = async () => {
       const user = req.body;
       const result = await Users.insertOne(user);
       res.send(result);
+    });
+
+    app.get("/users", async (req, res) => {
+      const query = {};
+      const users = await Users.find(query).toArray();
+      res.send(users);
     });
 
     app.get("/jwt", async (req, res) => {
