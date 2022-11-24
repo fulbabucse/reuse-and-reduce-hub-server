@@ -49,6 +49,14 @@ const dbConnect = async () => {
       console.log(result);
     });
 
+    app.get("/my-products", async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email };
+      const products = await Products.find(query).toArray();
+      res.send(products);
+      console.log(email);
+    });
+
     app.get("/products", async (req, res) => {
       const categoryName = req.query.category;
       const query = { category_name: categoryName };
