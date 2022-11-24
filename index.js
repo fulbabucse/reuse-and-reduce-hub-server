@@ -41,15 +41,9 @@ const dbConnect = async () => {
   const Products = client.db("reuseReduceDatabase").collection("products");
 
   try {
-    app.get("/products/:categoryName", async (req, res) => {
-      const categoryName = req.params.categoryName;
-      const query = { category_name: categoryName };
-      const products = await Products.find(query).toArray();
-      res.send(products);
-    });
-
     app.get("/products", async (req, res) => {
-      const query = {};
+      const categoryName = req.query.category;
+      const query = { category_name: categoryName };
       const products = await Products.find(query).toArray();
       res.send(products);
     });
@@ -58,6 +52,13 @@ const dbConnect = async () => {
       const product = req.body;
       const result = await Products.insertOne(product);
       res.send(result);
+    });
+
+    app.get("/categories/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const categories = await Categories.findOne(query);
+      res.send(categories);
     });
 
     app.get("/categories", async (req, res) => {
