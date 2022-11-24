@@ -37,8 +37,22 @@ const client = new MongoClient(url, {
 
 const dbConnect = async () => {
   const Users = client.db("reuseReduceDatabase").collection("users");
+  const Categories = client.db("reuseReduceDatabase").collection("categories");
+  const Products = client.db("reuseReduceDatabase").collection("products");
 
   try {
+    app.post("/products", async (req, res) => {
+      const product = req.body;
+      const result = await Products.insertOne(product);
+      res.send(result);
+    });
+
+    app.get("/categories", async (req, res) => {
+      const query = {};
+      const categories = await Categories.find(query).toArray();
+      res.send(categories);
+    });
+
     app.post("/users", async (req, res) => {
       const user = req.body;
       const result = await Users.insertOne(user);
