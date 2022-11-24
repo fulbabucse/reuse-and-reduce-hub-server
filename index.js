@@ -39,8 +39,16 @@ const dbConnect = async () => {
   const Users = client.db("reuseReduceDatabase").collection("users");
   const Categories = client.db("reuseReduceDatabase").collection("categories");
   const Products = client.db("reuseReduceDatabase").collection("products");
+  const Booking = client.db("reuseReduceDatabase").collection("booking");
 
   try {
+    app.post("/bookings", async (req, res) => {
+      const booking = req.body;
+      const result = await Booking.insertOne(booking);
+      res.send(result);
+      console.log(result);
+    });
+
     app.get("/products", async (req, res) => {
       const categoryName = req.query.category;
       const query = { category_name: categoryName };
