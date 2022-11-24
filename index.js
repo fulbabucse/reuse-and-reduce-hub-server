@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
 const app = express();
@@ -13,7 +13,20 @@ app.get("/", (req, res) => {
   res.send("Welcome to Reuse and Reduce Server ...");
 });
 
-const tokenVerify = (req, res, next) => {};
+const tokenVerify = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).send({ message: "unauthorized access" });
+  }
+  const token = authHeader.split(" ")[1];
+  jwt.verify(token, process.env.JWT_ACCESS_TOKEN, (err, decoded) => {
+    if (err) {
+      return res.status(403).send({ message: "Forbidden access" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+};
 
 const url = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.7ywptfp.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(url, {
@@ -32,10 +45,38 @@ const dbConnect = async () => {
       res.send(result);
     });
 
-    app.get("/users", async (req, res) => {
+    app.get("/users", tokenVerify, async (req, res) => {
       const query = {};
       const users = await Users.find(query).toArray();
       res.send(users);
+    });
+
+    app.get("/users/admin/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await Users.findOne(query);
+      res.send({ isAdmin: user?.role === "admin" });
+    });
+
+    app.put("/users/admin/:id", tokenVerify, async (req, res) => {
+      const email = req.decoded.email;
+      const query = { email };
+      const user = await Users.findOne(query);
+
+      if (user?.role !== "admin") {
+        return res.status(401).send({ message: "unauthorized access" });
+      }
+
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updatedInfo = {
+        $set: {
+          role: "admin",
+        },
+      };
+      const updated = await Users.updateOne(filter, updatedInfo, options);
+      res.send(updated);
     });
 
     app.get("/jwt", async (req, res) => {
