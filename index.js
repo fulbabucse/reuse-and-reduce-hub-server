@@ -2,9 +2,10 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
 const app = express();
+require("dotenv").config();
 const port = process.env.PORT || 5000;
 const jwt = require("jsonwebtoken");
-require("dotenv").config();
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 app.use(cors());
 app.use(express.json());
@@ -14,11 +15,11 @@ app.get("/", (req, res) => {
 });
 
 const tokenVerify = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
+  const authToken = req.headers.authorization;
+  if (!authToken) {
     return res.status(401).send({ message: "unauthorized access" });
   }
-  const token = authHeader.split(" ")[1];
+  const token = authToken.split(" ")[1];
   jwt.verify(token, process.env.JWT_ACCESS_TOKEN, (err, decoded) => {
     if (err) {
       return res.status(403).send({ message: "Forbidden access" });
@@ -40,8 +41,40 @@ const dbConnect = async () => {
   const Categories = client.db("reuseReduceDatabase").collection("categories");
   const Products = client.db("reuseReduceDatabase").collection("products");
   const Booking = client.db("reuseReduceDatabase").collection("booking");
+  const Payments = client.db("reuseReduceDatabase").collection("payments");
 
   try {
+    app.post("/payments", async (req, res) => {
+      const paymentInfo = req.body;
+      const payments = await Payments.insertOne(paymentInfo);
+
+      const bookingId = paymentInfo.bookingId;
+      const filter = { _id: ObjectId(bookingId) };
+      const updatedInfo = {
+        $set: {
+          paymentStatus: true,
+          transectionId: paymentInfo.transectionId,
+        },
+      };
+      const result = await Booking.updateOne(filter, updatedInfo);
+      res.send(payments);
+    });
+
+    app.post("/create-payment-intent", async (req, res) => {
+      const booking = req.body;
+      const amount = parseInt(booking.price);
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
+
     app.get("/users/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email };
@@ -49,6 +82,13 @@ const dbConnect = async () => {
       res.send({
         isCombineUser: user?.role === "admin" || user?.userType === "Seller",
       });
+    });
+
+    app.get("/bookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const booking = await Booking.findOne(filter);
+      res.send(booking);
     });
 
     app.get("/bookings", async (req, res) => {
