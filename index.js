@@ -42,11 +42,13 @@ const dbConnect = async () => {
   const Booking = client.db("reuseReduceDatabase").collection("booking");
 
   try {
-    app.get("/users/seller/:email", async (req, res) => {
+    app.get("/users/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email };
       const user = await Users.findOne(query);
-      res.send({ isSeller: user?.userType === "Seller" });
+      res.send({
+        isCombineUser: user?.role === "admin" || user?.userType === "Seller",
+      });
     });
 
     app.get("/bookings", async (req, res) => {
@@ -78,10 +80,6 @@ const dbConnect = async () => {
         const products = await Products.find(query).toArray();
         return res.send(products);
       }
-
-      // const query = { email: email };
-      // const products = await Products.find(query).toArray();
-      // res.send(products);
     });
 
     app.get("/products", async (req, res) => {
