@@ -116,6 +116,13 @@ const dbConnect = async () => {
       res.send(products);
     });
 
+    app.delete("/my-products/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const deleteProduct = await Products.deleteOne(filter);
+      res.send(deleteProduct);
+    });
+
     app.get("/my-products", async (req, res) => {
       const email = req.query.email;
       const filter = { email };
