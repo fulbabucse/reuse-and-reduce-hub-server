@@ -104,6 +104,12 @@ const dbConnect = async () => {
       res.send(result);
     });
 
+    app.get("/advertiseProduct", async (req, res) => {
+      const filter = { advertise: true };
+      const products = await Products.find(filter).toArray();
+      res.send(products);
+    });
+
     app.get("/all-products", async (req, res) => {
       const query = {};
       const products = await Products.find(query).toArray();
@@ -120,6 +126,19 @@ const dbConnect = async () => {
         const products = await Products.find(query).toArray();
         return res.send(products);
       }
+    });
+
+    app.put("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const updatedInfo = {
+        $set: {
+          advertise: true,
+        },
+      };
+      const updated = await Products.updateOne(filter, updatedInfo);
+      res.send(updated);
+      console.log(updated);
     });
 
     app.patch("/products/:id", async (req, res) => {
@@ -158,6 +177,19 @@ const dbConnect = async () => {
       const query = {};
       const categories = await Categories.find(query).toArray();
       res.send(categories);
+    });
+
+    app.put("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const user = req.body;
+      const filter = { email };
+      const options = { upsert: true };
+      const updatedInfo = {
+        $set: { user },
+      };
+      const updated = await Users.updateOne(filter, updatedInfo, options);
+      res.send(updated);
+      console.log(updated);
     });
 
     app.post("/users", async (req, res) => {
