@@ -82,6 +82,18 @@ const dbConnect = async () => {
       }
     });
 
+    app.patch("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const updatedInfo = {
+        $set: {
+          sold: true,
+        },
+      };
+      const updated = await Products.updateOne(filter, updatedInfo);
+      res.send(updated);
+    });
+
     app.get("/products", async (req, res) => {
       const categoryName = req.query.category;
       const query = { category_name: categoryName };
