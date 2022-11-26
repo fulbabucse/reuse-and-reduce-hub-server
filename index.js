@@ -254,8 +254,8 @@ const dbConnect = async () => {
     });
 
     app.patch("/verify-seller", async (req, res) => {
-      const id = req.query.id;
-      const filter = { _id: ObjectId(id) };
+      const email = req.query.email;
+      const filter = { email };
       const updatedInfo = {
         $set: {
           verified: true,
