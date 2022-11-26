@@ -48,7 +48,7 @@ const dbConnect = async () => {
       const paymentInfo = req.body;
       const payments = await Payments.insertOne(paymentInfo);
 
-      const bookingId = paymentInfo.bookingId;
+      const bookingId = paymentInfo.paymentId;
       const filter = { _id: ObjectId(bookingId) };
       const updatedInfo = {
         $set: {
@@ -104,6 +104,14 @@ const dbConnect = async () => {
       res.send(result);
     });
 
+    app.get("/reported-products", async (req, res) => {
+      const query = {
+        report: true,
+      };
+      const products = await Products.find(query).toArray();
+      res.send(products);
+    });
+
     app.get("/advertiseProduct", async (req, res) => {
       const filter = { advertise: true };
       const products = await Products.find(filter).toArray();
@@ -145,7 +153,6 @@ const dbConnect = async () => {
       };
       const updated = await Products.updateOne(filter, updatedInfo);
       res.send(updated);
-      console.log(updated);
     });
 
     app.patch("/products/:id", async (req, res) => {
@@ -154,6 +161,18 @@ const dbConnect = async () => {
       const updatedInfo = {
         $set: {
           sold: true,
+        },
+      };
+      const updated = await Products.updateOne(filter, updatedInfo);
+      res.send(updated);
+    });
+
+    app.patch("/products/report/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: ObjectId(id) };
+      const updatedInfo = {
+        $set: {
+          report: true,
         },
       };
       const updated = await Products.updateOne(filter, updatedInfo);
@@ -199,11 +218,14 @@ const dbConnect = async () => {
       const filter = { email };
       const options = { upsert: true };
       const updatedInfo = {
-        $set: { user },
+        $set: {
+          name: user.name,
+          email: user.email,
+          userType: user.userType,
+        },
       };
       const updated = await Users.updateOne(filter, updatedInfo, options);
       res.send(updated);
-      console.log(updated);
     });
 
     app.post("/users", async (req, res) => {
