@@ -241,8 +241,18 @@ const dbConnect = async () => {
       res.send(result);
     });
 
-    app.get("/users", tokenVerify, async (req, res) => {
-      const query = {};
+    app.get("/sellers", tokenVerify, async (req, res) => {
+      const query = {
+        userType: "Seller",
+      };
+      const users = await Users.find(query).toArray();
+      res.send(users);
+    });
+
+    app.get("/buyers", async (req, res) => {
+      const query = {
+        userType: "Buyer",
+      };
       const users = await Users.find(query).toArray();
       res.send(users);
     });
