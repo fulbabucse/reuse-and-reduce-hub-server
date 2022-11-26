@@ -253,6 +253,18 @@ const dbConnect = async () => {
       res.send(updated);
     });
 
+    app.patch("/verify-seller", async (req, res) => {
+      const id = req.query.id;
+      const filter = { _id: ObjectId(id) };
+      const updatedInfo = {
+        $set: {
+          verified: true,
+        },
+      };
+      const updated = await Users.updateOne(filter, updatedInfo);
+      res.send(updated);
+    });
+
     app.post("/users", async (req, res) => {
       const user = req.body;
       const result = await Users.insertOne(user);
