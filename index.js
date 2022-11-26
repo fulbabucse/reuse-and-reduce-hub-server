@@ -60,7 +60,6 @@ const dbConnect = async () => {
       const updatedInfo = {
         $set: {
           paymentStatus: true,
-          transectionId: paymentInfo.transectionId,
         },
       };
       const result = await Booking.updateOne(filter, updatedInfo);
@@ -91,11 +90,30 @@ const dbConnect = async () => {
       });
     });
 
+    app.patch("/bookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { bookingId: id };
+      const updatedInfo = {
+        $set: {
+          sold: true,
+        },
+      };
+      const updated = await Booking.updateMany(filter, updatedInfo);
+      res.send(updated);
+      console.log(updated);
+    });
+
     app.get("/bookings/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: ObjectId(id) };
       const booking = await Booking.findOne(filter);
       res.send(booking);
+    });
+
+    app.get("/all-bookings", async (req, res) => {
+      const query = {};
+      const bookings = await Booking.find(query).toArray();
+      res.send(bookings);
     });
 
     app.get("/bookings", async (req, res) => {
@@ -249,10 +267,8 @@ const dbConnect = async () => {
       res.send(users);
     });
 
-    app.get("/admin", async (req, res) => {
-      const query = {
-        role: "admin",
-      };
+    app.get("/make-admin", async (req, res) => {
+      const query = {};
       const users = await Users.find(query).toArray();
       res.send(users);
     });
