@@ -131,7 +131,7 @@ const dbConnect = async () => {
       res.send(products);
     });
 
-    app.delete("/my-products/:id", async (req, res) => {
+    app.delete("/products/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: ObjectId(id) };
       const deleteProduct = await Products.deleteOne(filter);
@@ -244,6 +244,14 @@ const dbConnect = async () => {
     app.get("/sellers", tokenVerify, async (req, res) => {
       const query = {
         userType: "Seller",
+      };
+      const users = await Users.find(query).toArray();
+      res.send(users);
+    });
+
+    app.get("/admin", async (req, res) => {
+      const query = {
+        role: "admin",
       };
       const users = await Users.find(query).toArray();
       res.send(users);
