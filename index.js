@@ -44,6 +44,13 @@ const dbConnect = async () => {
   const Payments = client.db("reuseReduceDatabase").collection("payments");
 
   try {
+    app.get("/my-buyers/:email", async (req, res) => {
+      const email = req.params.email;
+      const filter = { seller_email: email };
+      const myBuyers = await Payments.find(filter).toArray();
+      res.send(myBuyers);
+    });
+
     app.post("/payments", async (req, res) => {
       const paymentInfo = req.body;
       const payments = await Payments.insertOne(paymentInfo);
