@@ -81,13 +81,6 @@ const dbConnect = async () => {
       });
     });
 
-    app.get("/verified-seller", async (req, res) => {
-      const email = req.query.email;
-      const filter = { email };
-      const user = await Users.findOne(filter);
-      res.send(user);
-    });
-
     app.get("/users/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email };
@@ -260,14 +253,23 @@ const dbConnect = async () => {
       res.send(updated);
     });
 
+    app.get("/verified-seller", async (req, res) => {
+      const email = req.query.email;
+      const filter = { email };
+      const user = await Users.findOne(filter);
+      res.send(user);
+    });
+
     app.patch("/verify-seller", async (req, res) => {
       const email = req.query.email;
+
       const filter = { email };
       const updatedInfo = {
         $set: {
           verified: true,
         },
       };
+      const productsVerified = await Products.updateMany(filter, updatedInfo);
       const updated = await Users.updateOne(filter, updatedInfo);
       res.send(updated);
     });
