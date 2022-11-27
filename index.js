@@ -42,8 +42,30 @@ const dbConnect = async () => {
   const Products = client.db("reuseReduceDatabase").collection("products");
   const Booking = client.db("reuseReduceDatabase").collection("booking");
   const Payments = client.db("reuseReduceDatabase").collection("payments");
+  const Advertise = client.db("reuseReduceDatabase").collection("advertise");
 
   try {
+    app.get("/advertise", async (req, res) => {
+      const query = {};
+      const advertise = await Advertise.find(query).toArray();
+      res.send(advertise);
+    });
+
+    app.delete("/advertise", async (req, res) => {
+      const time = req.query.time;
+      const query = {
+        postedTime: time,
+      };
+      const deleted = await Advertise.deleteOne(query);
+      res.send(deleted);
+    });
+
+    app.post("/advertise", async (req, res) => {
+      const advertiseBody = req.body;
+      const advertise = await Advertise.insertOne(advertiseBody);
+      res.send(advertise);
+    });
+
     app.get("/my-buyers/:email", async (req, res) => {
       const email = req.params.email;
       const filter = { seller_email: email };
