@@ -253,7 +253,7 @@ const dbConnect = async () => {
       res.send(updated);
     });
 
-    app.get("/verified-seller", async (req, res) => {
+    app.get("/users", async (req, res) => {
       const email = req.query.email;
       const filter = { email };
       const user = await Users.findOne(filter);
