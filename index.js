@@ -66,7 +66,7 @@ const dbConnect = async () => {
       res.send(advertise);
     });
 
-    app.get("/my-buyers/:email", async (req, res) => {
+    app.get("/my-buyers/:email", tokenVerify, async (req, res) => {
       const email = req.params.email;
       const filter = { seller_email: email };
       const myBuyers = await Payments.find(filter).toArray();
@@ -138,7 +138,7 @@ const dbConnect = async () => {
       res.send(bookings);
     });
 
-    app.get("/bookings", async (req, res) => {
+    app.get("/bookings", tokenVerify, async (req, res) => {
       const email = req.query.email;
       const query = { email: email };
       const bookings = await Booking.find(query).toArray();
@@ -151,7 +151,7 @@ const dbConnect = async () => {
       res.send(result);
     });
 
-    app.get("/reported-products", async (req, res) => {
+    app.get("/reported-products", tokenVerify, async (req, res) => {
       const query = {
         report: true,
       };
@@ -233,7 +233,7 @@ const dbConnect = async () => {
       res.send(products);
     });
 
-    app.post("/products", async (req, res) => {
+    app.post("/products", tokenVerify, async (req, res) => {
       const product = req.body;
       const result = await Products.insertOne(product);
       res.send(result);
@@ -310,13 +310,13 @@ const dbConnect = async () => {
       res.send(users);
     });
 
-    app.get("/make-admin", async (req, res) => {
+    app.get("/make-admin", tokenVerify, async (req, res) => {
       const query = {};
       const users = await Users.find(query).toArray();
       res.send(users);
     });
 
-    app.get("/buyers", async (req, res) => {
+    app.get("/buyers", tokenVerify, async (req, res) => {
       const query = {
         userType: "Buyer",
       };
