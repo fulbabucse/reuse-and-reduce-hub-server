@@ -135,7 +135,7 @@ const dbConnect = async () => {
       res.send(booking);
     });
 
-    app.get("/all-bookings", async (req, res) => {
+    app.get("/all-bookings", tokenVerify, async (req, res) => {
       const query = {};
       const bookings = await Booking.find(query).toArray();
       res.send(bookings);
@@ -176,7 +176,7 @@ const dbConnect = async () => {
       res.send(deleteProduct);
     });
 
-    app.get("/my-products", async (req, res) => {
+    app.get("/my-products", tokenVerify, async (req, res) => {
       const email = req.query.email;
       const filter = { email };
       const user = await Users.findOne(filter);
