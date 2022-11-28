@@ -14,6 +14,7 @@ app.get("/", (req, res) => {
   res.send("Welcome to Reuse and Reduce Server ...");
 });
 
+// Token Verify
 const tokenVerify = (req, res, next) => {
   const authToken = req.headers.authorization;
   if (!authToken) {
@@ -29,6 +30,7 @@ const tokenVerify = (req, res, next) => {
   });
 };
 
+// Mongodb URL
 const url = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.7ywptfp.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(url, {
   useNewUrlParser: true,
@@ -37,6 +39,7 @@ const client = new MongoClient(url, {
 });
 
 const dbConnect = async () => {
+  // All Collections
   const Users = client.db("reuseReduceDatabase").collection("users");
   const Categories = client.db("reuseReduceDatabase").collection("categories");
   const Products = client.db("reuseReduceDatabase").collection("products");
@@ -45,6 +48,7 @@ const dbConnect = async () => {
   const Advertise = client.db("reuseReduceDatabase").collection("advertise");
 
   try {
+    // Advertisement API
     app.get("/advertise", async (req, res) => {
       const query = {};
       const advertise = await Advertise.find(query).toArray();
@@ -66,6 +70,13 @@ const dbConnect = async () => {
       res.send(advertise);
     });
 
+    app.get("/advertiseProduct", async (req, res) => {
+      const filter = { advertise: true };
+      const products = await Products.find(filter).toArray();
+      res.send(products);
+    });
+
+    // My Buyer API
     app.get("/my-buyers/:email", tokenVerify, async (req, res) => {
       const email = req.params.email;
       const filter = { seller_email: email };
@@ -73,6 +84,7 @@ const dbConnect = async () => {
       res.send(myBuyers);
     });
 
+    // Payment API
     app.post("/payments", async (req, res) => {
       const paymentInfo = req.body;
       const payments = await Payments.insertOne(paymentInfo);
@@ -103,15 +115,7 @@ const dbConnect = async () => {
       });
     });
 
-    app.get("/users/:email", async (req, res) => {
-      const email = req.params.email;
-      const query = { email };
-      const user = await Users.findOne(query);
-      res.send({
-        isCombineUser: user?.role === "admin" || user?.userType === "Seller",
-      });
-    });
-
+    // Bookings API
     app.patch("/bookings/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { bookingId: id };
@@ -122,7 +126,6 @@ const dbConnect = async () => {
       };
       const updated = await Booking.updateMany(filter, updatedInfo);
       res.send(updated);
-      console.log(updated);
     });
 
     app.get("/bookings/:id", async (req, res) => {
@@ -151,17 +154,12 @@ const dbConnect = async () => {
       res.send(result);
     });
 
+    // Products API
     app.get("/reported-products", tokenVerify, async (req, res) => {
       const query = {
         report: true,
       };
       const products = await Products.find(query).toArray();
-      res.send(products);
-    });
-
-    app.get("/advertiseProduct", async (req, res) => {
-      const filter = { advertise: true };
-      const products = await Products.find(filter).toArray();
       res.send(products);
     });
 
@@ -239,6 +237,7 @@ const dbConnect = async () => {
       res.send(result);
     });
 
+    // Categories API
     app.get("/categories/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
@@ -252,6 +251,7 @@ const dbConnect = async () => {
       res.send(categories);
     });
 
+    // Users API
     app.delete("/users/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: ObjectId(id) };
@@ -282,6 +282,13 @@ const dbConnect = async () => {
       res.send(user);
     });
 
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const result = await Users.insertOne(user);
+      res.send(result);
+    });
+
+    // Seller API
     app.patch("/verify-seller", async (req, res) => {
       const email = req.query.email;
 
@@ -296,12 +303,6 @@ const dbConnect = async () => {
       res.send(updated);
     });
 
-    app.post("/users", async (req, res) => {
-      const user = req.body;
-      const result = await Users.insertOne(user);
-      res.send(result);
-    });
-
     app.get("/sellers", tokenVerify, async (req, res) => {
       const query = {
         userType: "Seller",
@@ -310,6 +311,7 @@ const dbConnect = async () => {
       res.send(users);
     });
 
+    // Make Admin API
     app.get("/make-admin", tokenVerify, async (req, res) => {
       const query = {};
       const users = await Users.find(query).toArray();
@@ -324,6 +326,17 @@ const dbConnect = async () => {
       res.send(users);
     });
 
+    // Seller & Admin Shared Route API
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email };
+      const user = await Users.findOne(query);
+      res.send({
+        isCombineUser: user?.role === "admin" || user?.userType === "Seller",
+      });
+    });
+
+    // Admin Route API
     app.get("/users/admin/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email };
@@ -352,6 +365,7 @@ const dbConnect = async () => {
       res.send(updated);
     });
 
+    // JWT Token Check
     app.get("/jwt", async (req, res) => {
       const email = req.query.email;
       const query = { email };
